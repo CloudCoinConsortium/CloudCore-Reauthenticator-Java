@@ -5,6 +5,8 @@ import com.cloudcore.reauthenticator.raida.RAIDA;
 import com.cloudcore.reauthenticator.server.Command;
 import com.cloudcore.reauthenticator.utils.SimpleLogger;
 
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 
 import static com.cloudcore.reauthenticator.raida.RAIDA.updateLog;
@@ -15,41 +17,55 @@ public class Main {
 
     public static void main(String[] args) {
         SimpleLogger.writeLog("ServantReauthenticatorStarted", "");
-        ArrayList<Command> commands;
-        try {
-            setup();
-            updateLog("Loading Network Directory");
-            SetupRAIDA();
+        singleRun = isSingleRun(args);
+        if (args.length != 0 && Files.exists(Paths.get(args[0]))) {
+            System.out.println("New root path: " + args[0]);
+            FileSystem.changeRootPath(args[0]);
+        }
 
-            FolderWatcher watcher = new FolderWatcher(FileSystem.CommandsFolder);
-            boolean stop = false;
+        setup();
+        updateLog("Loading Network Directory");
+        SetupRAIDA();
 
-            commands = FileSystem.getCommands();
-            if (commands.size() > 0)
-                for (Command command : commands) {
-                    FileSystem.createAccountDirectories(command.account);
-                    RAIDA.processNetworkCoins(NetworkNumber, command.account, FileSystem.BankPath);
-                    FileSystem.archiveCommand(command);
-                }
+        ArrayList<Command> commands = FileSystem.getCommands();
+        if (commands.size() > 0)
+            for (Command command : commands) {
+                RAIDA.processNetworkCoins(NetworkNumber, command.account, FileSystem.BankPath);
+                FileSystem.archiveCommand(command);
+                exitIfSingleRun();
+            }
 
-            System.out.println("Watching folders at " + FileSystem.CommandsFolder + "...");
+        FolderWatcher watcher = new FolderWatcher(FileSystem.CommandsFolder);
+        System.out.println("Watching for commands at " + FileSystem.CommandsFolder);
+        while (true) {
+            try {
+                Thread.sleep(1000);
 
-            while (!stop) {
                 if (watcher.newFileDetected()) {
                     commands = FileSystem.getCommands();
                     if (commands.size() > 0)
                         for (Command command : commands) {
-                            FileSystem.createAccountDirectories(command.account);
                             RAIDA.processNetworkCoins(NetworkNumber, command.account, FileSystem.BankPath);
                             FileSystem.archiveCommand(command);
+                            exitIfSingleRun();
                         }
                 }
+            } catch (Exception e) {
+                System.out.println("Uncaught exception - " + e.getLocalizedMessage());
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-            System.out.println("Uncaught exception - " + e.getLocalizedMessage());
         }
+    }
 
+    public static boolean singleRun = false;
+    public static boolean isSingleRun(String[] args) {
+        for (String arg : args)
+            if (arg.equals("singleRun"))
+                return true;
+        return false;
+    }
+    public static void exitIfSingleRun() {
+        if (singleRun)
+            System.exit(0);
     }
 
     private static void setup() {
@@ -88,6 +104,5 @@ public class Main {
                 System.exit(0);
             }
         }
-        //networks[0]
     }
 }

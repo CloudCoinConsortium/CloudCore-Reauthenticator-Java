@@ -20,7 +20,7 @@ public class FileSystem {
 
     /* Fields */
 
-    public static String RootPath = "C:" + File.separator + "CloudCoinServer" + File.separator;
+    public static String RootPath = "C:\\Users\\Public\\Documents\\CloudCoin\\";
 
     public static String DetectedPath = File.separator + Config.TAG_DETECTED + File.separator;
     public static String ImportPath = File.separator + Config.TAG_IMPORT + File.separator;
@@ -39,7 +39,7 @@ public class FileSystem {
         try {
             Files.createDirectories(Paths.get(RootPath));
 
-            Files.createDirectories(Paths.get(AccountsFolder));
+            Files.createDirectories(Paths.get(RootPath + BankPath));
             Files.createDirectories(Paths.get(CommandsFolder));
             Files.createDirectories(Paths.get(LogsFolder));
         } catch (Exception e) {
@@ -51,22 +51,20 @@ public class FileSystem {
         return true;
     }
 
-    public static boolean createAccountDirectories(String account) {
-        try {
-            Files.createDirectories(Paths.get(RootPath));
+    public static void changeRootPath(String rootPath) {
+        RootPath = rootPath;
 
-            Files.createDirectories(Paths.get(RootPath + account + DetectedPath));
-            Files.createDirectories(Paths.get(RootPath + account + ImportPath));
-            Files.createDirectories(Paths.get(RootPath + account + SuspectPath));
+        DetectedPath = File.separator + Config.TAG_DETECTED + File.separator;
+        ImportPath = File.separator + Config.TAG_IMPORT + File.separator;
+        SuspectPath = File.separator + Config.TAG_SUSPECT + File.separator;
 
-            Files.createDirectories(Paths.get(RootPath + account + BankPath));
-        } catch (Exception e) {
-            System.out.println("FS#CD: " + e.getLocalizedMessage());
-            e.printStackTrace();
-            return false;
-        }
+        BankPath = File.separator + Config.TAG_BANK + File.separator;
 
-        return true;
+        AccountsFolder = RootPath + Config.TAG_ACCOUNTS + File.separator;
+        CommandsFolder = RootPath + Config.TAG_COMMAND + File.separator;
+        LogsFolder = RootPath + Config.TAG_LOGS + File.separator;
+
+        LogsFolder = RootPath + Config.TAG_LOGS + File.separator + Config.MODULE_NAME + File.separator;
     }
 
     public static ArrayList<Command> getCommands() {
@@ -100,14 +98,14 @@ public class FileSystem {
     }
 
     public static void moveFromImportToSuspectFolder(String account) {
-        for (CloudCoin coin : loadFolderCoins(AccountsFolder + account + ImportPath)) {
+        for (CloudCoin coin : loadFolderCoins(FileSystem.RootPath + FileSystem.ImportPath)) {
             String fileName = CoinUtils.generateFilename(coin);
 
             Stack stack = new Stack(coin);
             try {
-                Files.write(Paths.get(AccountsFolder + account + SuspectPath + fileName + ".stack"),
+                Files.write(Paths.get(FileSystem.RootPath + FileSystem.SuspectPath + fileName + ".stack"),
                         Utils.createGson().toJson(stack).getBytes(StandardCharsets.UTF_8));
-                Files.deleteIfExists(Paths.get(AccountsFolder + account + ImportPath + coin.currentFilename));
+                Files.deleteIfExists(Paths.get(FileSystem.RootPath + FileSystem.ImportPath + coin.currentFilename));
             } catch (IOException e) {
                 System.out.println("FS#DPP: " + e.getLocalizedMessage());
                 e.printStackTrace();

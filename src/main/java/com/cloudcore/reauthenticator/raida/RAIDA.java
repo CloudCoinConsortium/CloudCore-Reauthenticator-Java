@@ -121,14 +121,14 @@ public class RAIDA {
     public static CompletableFuture<Object> processNetworkCoins(int NetworkNumber, String account, String folderPath, boolean ChangeANS) {
         System.out.println("Processing Network Coins...");
         return CompletableFuture.supplyAsync(() -> {
-            if (folderPath.equals(FileSystem.SuspectPath))
+            if (folderPath.equals(FileSystem.RootPath + FileSystem.SuspectPath))
                 FileSystem.moveFromImportToSuspectFolder(account);
 
-            ArrayList<CloudCoin> folderCoins = FileSystem.loadFolderCoins(FileSystem.AccountsFolder + account + folderPath);
-            System.out.println(folderCoins.size() + " coins in " + FileSystem.AccountsFolder + account + folderPath);
+            ArrayList<CloudCoin> folderCoins = FileSystem.loadFolderCoins(FileSystem.RootPath + FileSystem.BankPath);
+            System.out.println(folderCoins.size() + " coins in " + FileSystem.RootPath + FileSystem.BankPath);
             ArrayList<CloudCoin> allCoins = new ArrayList<>();
             for (CloudCoin coin : folderCoins) {
-                if (folderPath.equals(FileSystem.BankPath)) {
+                if (folderPath.equals(FileSystem.RootPath + FileSystem.BankPath)) {
                     if (CoinUtils.checkExpirationDate(coin))
                         allCoins.add(coin);
                 }
@@ -189,8 +189,8 @@ public class RAIDA {
                             CoinUtils.setAnsToPans(coin);
 
                         if (folderPath.equals(FileSystem.SuspectPath))
-                            FileSystem.moveAndUpdateCoin(coin, FileSystem.AccountsFolder + account + FileSystem.SuspectPath,
-                                    FileSystem.AccountsFolder + account + FileSystem.DetectedPath, ".stack");
+                            FileSystem.moveAndUpdateCoin(coin, FileSystem.RootPath + FileSystem.SuspectPath,
+                                    FileSystem.RootPath + FileSystem.DetectedPath, ".stack");
                         else
                             FileSystem.updateCoin(coin);
 

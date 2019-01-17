@@ -1,5 +1,6 @@
 package com.cloudcore.reauthenticator.utils;
 
+import com.cloudcore.reauthenticator.core.Config;
 import com.cloudcore.reauthenticator.core.FileSystem;
 
 import java.io.IOException;
@@ -19,7 +20,8 @@ public class SimpleLogger {
 
 
     public static void writeLog(String filenameDetails, String logFileDetails) {
-        String filepath = fullFilePath + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS")).toLowerCase() + '-' + filenameDetails;
+        String filepath = fullFilePath + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH.mm.ss.SSS")).toLowerCase()
+                + ' ' + Config.MODULE_NAME + ' ' + filenameDetails;
         String finalFilepath = filepath + ".log";
         int counter = 0;
 
