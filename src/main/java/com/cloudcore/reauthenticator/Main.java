@@ -9,6 +9,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 
+import static com.cloudcore.reauthenticator.raida.RAIDA.resetInstance;
 import static com.cloudcore.reauthenticator.raida.RAIDA.updateLog;
 
 public class Main {
@@ -23,15 +24,13 @@ public class Main {
             FileSystem.changeRootPath(args[0]);
         }
 
-        setup();
-        updateLog("Loading Network Directory");
-        SetupRAIDA();
-
         ArrayList<Command> commands = FileSystem.getCommands();
         if (commands.size() > 0)
             for (Command command : commands) {
+                setup();
                 RAIDA.processNetworkCoins(NetworkNumber, command.account, FileSystem.BankPath);
                 FileSystem.archiveCommand(command);
+                resetInstance();
                 exitIfSingleRun();
             }
 
@@ -45,8 +44,10 @@ public class Main {
                     commands = FileSystem.getCommands();
                     if (commands.size() > 0)
                         for (Command command : commands) {
+                            setup();
                             RAIDA.processNetworkCoins(NetworkNumber, command.account, FileSystem.BankPath);
                             FileSystem.archiveCommand(command);
+                            resetInstance();
                             exitIfSingleRun();
                         }
                 }
@@ -71,6 +72,8 @@ public class Main {
     private static void setup() {
         FileSystem.createDirectories();
         RAIDA.getInstance();
+        updateLog("Loading Network Directory");
+        SetupRAIDA();
     }
     public static void SetupRAIDA() {
         try
